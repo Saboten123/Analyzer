@@ -4,7 +4,7 @@ from pathlib import Path
 from dataclasses import dataclass
 import chess
 import chess.engine
-
+import os
 
 MATE_SCORE = 100_000
 
