@@ -7,6 +7,43 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
+    <style>
+        .loading-popup {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            min-width: 320px;
+        }
+
+        .spinner {
+            width: 55px;
+            height: 55px;
+            margin: 0 auto 20px;
+            border: 5px solid #ddd;
+            border-top: 5px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -18,14 +55,18 @@
         <p class="subtitle">
             Upload your PGN file and let Stockfish analyze your game.
         </p>
-        {% if error %}<p class="error">{{ error }}</p>{% endif %}
 
-        <form action="/analyze" method="POST" enctype="multipart/form-data">
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form id="uploadForm" action="/analyze" method="POST" enctype="multipart/form-data">
 
             <input type="file" name="pgn" accept=".pgn" required>
 
             <label for="engine-depth">Stockfish depth</label>
-            <input id="engine-depth" type="number" name="engine_depth" min="1" max="30" value="{{ engine_depth }}" required>
+            <input id="engine-depth" type="number" name="engine_depth" min="1" max="30" value="{{ engine_depth }}"
+                required>
 
             <br><br>
 
@@ -33,9 +74,28 @@
                 Analyze Game
             </button>
 
+            <center>
+                <p>Please keep the max depth below 10.</p>
+            </center>
+
         </form>
 
     </div>
+
+    <!-- Loading Popup -->
+    <div id="loadingPopup" class="loading-popup">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2>Analyzing your game...</h2>
+            <p>Please wait.<br>This may take a few moments depending on the selected depth.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", function () {
+            document.getElementById("loadingPopup").style.display = "flex";
+        });
+    </script>
 
 </body>
 
