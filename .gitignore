@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+
+# Stockfish
+Stockfish/
+
+
+# Environment variables
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Large files
+analysis.zip
+Stockfish/stockfish.exe
+
+# Optional: ignore all zip files
+*.zip
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Flask
+instance/
+*.db
+
+# Logs
+*.log
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Uploaded PGN files (if your app stores them)
+uploads/
+
+# Generated reports (if PDFs are generated dynamically)
+reports/
+
+# Jupyter
+.ipynb_checkpoints/
