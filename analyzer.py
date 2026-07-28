@@ -99,6 +99,55 @@ def analyze_pgn(pgn_text: str, depth: int = 15) -> dict:
         "average_cpl": average([row["cpl"] for row in results]),
         "evaluation_graph": evaluation_graph(graph_points),
     }
+    
+def analyze_fen(fen: str, depth: int = 15) -> dict:
+    try:
+        board = chess.Board(fen)
+    except ValueError:
+        raise ValueError("Invalid FEN position.")
+
+    with StockfishEngine(depth=depth) as engine:
+        candidates = engine.analyse_candidates(board, count=3)
+
+        if not candidates:
+            raise RuntimeError("Stockfish returned no legal moves.")
+
+        best_move = candidates[0].best_move
+        best_san = board.san(best_move)
+        best_white_score = candidates[0].white_score
+
+    evaluation = round(best_white_score / 100, 2)
+
+    return {
+        "engine_depth": depth,
+        "initial_fen": fen,
+        "opening_name": "N/A",
+        "ECO_code": "N/A",
+        "opening": {
+            "opening_name": "N/A",
+            "ECO_code": "N/A",
+            "book_plies": 0,
+        },
+        "moves": [],
+        "white_accuracy": None,
+        "black_accuracy": None,
+        "white_average_cpl": None,
+        "black_average_cpl": None,
+        "average_cpl": None,
+        "evaluation_graph": None,
+
+        # New fields for FEN analysis
+        "best_move": best_san,
+        "evaluation": evaluation,
+        "principal_variation": [
+            {
+                "rank": rank,
+                "move": board.san(candidate.best_move),
+                "evaluation": round(candidate.white_score / 100, 2),
+            }
+            for rank, candidate in enumerate(candidates, start=1)
+        ],
+    }
 
 
 def _is_sound_sacrifice(board: chess.Board, move: chess.Move, cpl: int) -> bool:

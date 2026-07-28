@@ -21,29 +21,73 @@ def home():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    file = request.files.get("pgn")
-    if file is None or not file.filename:
-        return render_template("index.html", error="Please choose a PGN file.", engine_depth=app.config["STOCKFISH_DEPTH"]), 400
+    analysis_type = request.form.get("analysis_type", "pgn")
+
     try:
         depth = int(request.form.get("engine_depth", app.config["STOCKFISH_DEPTH"]))
         if not 1 <= depth <= 30:
             raise ValueError("Engine depth must be between 1 and 30.")
-        pgn_text = file.read().decode("utf-8")
 
-        analysis = analyze_pgn(pgn_text, depth=depth)
+        if analysis_type == "pgn":
 
-        game = chess.pgn.read_game(io.StringIO(pgn_text))
+            file = request.files.get("pgn")
 
-        moves = []
+            if file is None or not file.filename:
+                return render_template(
+                    "index.html",
+                    error="Please choose a PGN file.",
+                    engine_depth=app.config["STOCKFISH_DEPTH"]
+                ), 400
 
-        if game:
-            for move in game.mainline_moves():
-                moves.append(move.uci())
+            pgn_text = file.read().decode("utf-8")
+
+            analysis = analyze_pgn(pgn_text, depth=depth)
+
+            game = chess.pgn.read_game(io.StringIO(pgn_text))
+
+            moves = []
+
+            if game:
+                for move in game.mainline_moves():
+                    moves.append(move.uci())
+
+        else:
+
+            fen = request.form.get("fen", "").strip()
+
+            if not fen:
+                return render_template(
+                    "index.html",
+                    error="Please enter a FEN position.",
+                    engine_depth=app.config["STOCKFISH_DEPTH"]
+                ), 400
+
+            analysis = analyze_fen(fen, depth=depth)
+
+            moves = []
+            analysis["moves"] = []
+
+        report_token = analysis_store.put(analysis)
+
+        evaluations = [
+            move["played_evaluation"]
+            for move in analysis.get("moves", [])
+        ]
+
+        return render_template(
+            "result.html",
+            analysis=analysis,
+            report_token=report_token,
+            moves=moves,
+            evaluations=evaluations
+        )
+
     except (UnicodeDecodeError, ValueError, RuntimeError) as error:
-        return render_template("index.html", error=str(error), engine_depth=app.config["STOCKFISH_DEPTH"]), 400
-    report_token = analysis_store.put(analysis)
-    evaluations = [move["played_evaluation"] for move in analysis["moves"]]
-    return render_template("result.html", analysis=analysis, report_token=report_token,moves=moves,evaluations=evaluations)
+        return render_template(
+            "index.html",
+            error=str(error),
+            engine_depth=app.config["STOCKFISH_DEPTH"]
+        ), 400
 
 
 @app.route("/report/<token>.pdf")
