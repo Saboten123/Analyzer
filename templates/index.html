@@ -42,6 +42,31 @@
                 transform: rotate(360deg);
             }
         }
+
+        .analysis-choice {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .analysis-choice label {
+            margin: 0 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            height: 90px;
+            padding: 10px;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        #fen-section {
+            display: none;
+        }
     </style>
 
 </head>
@@ -53,7 +78,7 @@
         <h1>♟ Chess Analyzer</h1>
 
         <p class="subtitle">
-            Upload your PGN file and let Stockfish analyze your game.
+            Analyze complete chess games (PGN) or individual positions (FEN) using Stockfish.
         </p>
 
         {% if error %}
@@ -62,16 +87,38 @@
 
         <form id="uploadForm" action="/analyze" method="POST" enctype="multipart/form-data">
 
-            <input type="file" name="pgn" accept=".pgn" required>
+            <div class="analysis-choice">
+                <label>
+                    <input type="radio" name="analysis_type" value="pgn" checked>
+                    PGN Game
+                </label>
 
-            <label for="engine-depth">Stockfish depth</label>
+                <label>
+                    <input type="radio" name="analysis_type" value="fen">
+                    FEN Position
+                </label>
+            </div>
+
+            <!-- PGN Upload -->
+            <div id="pgn-section">
+                <input id="pgn-input" type="file" name="pgn" accept=".pgn" required>
+            </div>
+
+            <!-- FEN Input -->
+            <div id="fen-section">
+                <textarea id="fen-input" name="fen" placeholder="Paste your FEN position here..."></textarea>
+            </div>
+
+            <br>
+
+            <label for="engine-depth">Stockfish Depth</label>
             <input id="engine-depth" type="number" name="engine_depth" min="1" max="30" value="{{ engine_depth }}"
                 required>
 
             <br><br>
 
             <button type="submit">
-                Analyze Game
+                Analyze
             </button>
 
             <center>
@@ -86,14 +133,50 @@
     <div id="loadingPopup" class="loading-popup">
         <div class="loading-content">
             <div class="spinner"></div>
-            <h2>Analyzing your game...</h2>
+            <h2>Analyzing...</h2>
             <p>Please wait.<br>This may take a few moments depending on the selected depth.</p>
         </div>
     </div>
 
     <script>
+        const pgnSection = document.getElementById("pgn-section");
+        const fenSection = document.getElementById("fen-section");
+
+        const pgnInput = document.getElementById("pgn-input");
+        const fenInput = document.getElementById("fen-input");
+
+        document.querySelectorAll('input[name="analysis_type"]').forEach(radio => {
+
+            radio.addEventListener("change", function () {
+
+                if (this.value === "pgn") {
+                    pgnSection.style.display = "block";
+                    fenSection.style.display = "none";
+
+                    pgnInput.required = true;
+                    fenInput.required = false;
+
+                } else {
+
+                    pgnSection.style.display = "none";
+                    fenSection.style.display = "block";
+
+                    pgnInput.required = false;
+                    fenInput.required = true;
+                }
+
+            });
+
+        });
+
         document.getElementById("uploadForm").addEventListener("submit", function () {
+
             document.getElementById("loadingPopup").style.display = "flex";
+
+            const btn = this.querySelector("button");
+            btn.disabled = true;
+            btn.innerText = "Analyzing...";
+
         });
     </script>
 
