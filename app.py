@@ -5,7 +5,7 @@ from pathlib import Path
 import chess.pgn
 
 from flask import Flask, abort, render_template, request, send_file
-from analyzer import analyze_pgn
+from analyzer import analyze_pgn, analyze_fen
 from report import build_pdf_report
 from report_store import AnalysisStore
 
@@ -16,17 +16,30 @@ analysis_store = AnalysisStore()
 
 @app.route("/")
 def home():
-    return render_template("index.html", engine_depth=app.config["STOCKFISH_DEPTH"])
+    return render_template(
+        "index.html",
+        engine_depth=app.config["STOCKFISH_DEPTH"]
+    )
 
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
+
     analysis_type = request.form.get("analysis_type", "pgn")
 
     try:
-        depth = int(request.form.get("engine_depth", app.config["STOCKFISH_DEPTH"]))
+
+        depth = int(
+            request.form.get(
+                "engine_depth",
+                app.config["STOCKFISH_DEPTH"]
+            )
+        )
+
         if not 1 <= depth <= 30:
             raise ValueError("Engine depth must be between 1 and 30.")
+
+        # ---------------- PGN ---------------- #
 
         if analysis_type == "pgn":
 
@@ -41,7 +54,10 @@ def analyze():
 
             pgn_text = file.read().decode("utf-8")
 
-            analysis = analyze_pgn(pgn_text, depth=depth)
+            analysis = analyze_pgn(
+                pgn_text,
+                depth=depth
+            )
 
             game = chess.pgn.read_game(io.StringIO(pgn_text))
 
@@ -50,6 +66,8 @@ def analyze():
             if game:
                 for move in game.mainline_moves():
                     moves.append(move.uci())
+
+        # ---------------- FEN ---------------- #
 
         else:
 
@@ -62,17 +80,29 @@ def analyze():
                     engine_depth=app.config["STOCKFISH_DEPTH"]
                 ), 400
 
-            analysis = analyze_fen(fen, depth=depth)
+            analysis = analyze_fen(
+                fen,
+                depth=depth
+            )
 
             moves = []
-            analysis["moves"] = []
-
-        report_token = analysis_store.put(analysis)
 
         evaluations = [
             move["played_evaluation"]
             for move in analysis.get("moves", [])
         ]
+
+        # ---------- Render FEN page ---------- #
+
+        if analysis_type == "fen":
+            return render_template(
+                "fen_result.html",
+                analysis=analysis
+            )
+
+        # ---------- Render PGN page ---------- #
+
+        report_token = analysis_store.put(analysis)
 
         return render_template(
             "result.html",
@@ -82,7 +112,12 @@ def analyze():
             evaluations=evaluations
         )
 
-    except (UnicodeDecodeError, ValueError, RuntimeError) as error:
+    except (
+        UnicodeDecodeError,
+        ValueError,
+        RuntimeError
+    ) as error:
+
         return render_template(
             "index.html",
             error=str(error),
@@ -92,11 +127,26 @@ def analyze():
 
 @app.route("/report/<token>.pdf")
 def download_report(token: str):
+
     analysis = analysis_store.get(token)
+
     if analysis is None:
-        abort(404, "This analysis report has expired. Please analyze the PGN again.")
-    pdf = build_pdf_report(analysis, Path(app.static_folder))
-    return send_file(pdf, mimetype="application/pdf", as_attachment=True, download_name="chess-analysis-report.pdf")
+        abort(
+            404,
+            "This analysis report has expired. Please analyze again."
+        )
+
+    pdf = build_pdf_report(
+        analysis,
+        Path(app.static_folder)
+    )
+
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="chess-analysis-report.pdf"
+    )
 
 
 if __name__ == "__main__":

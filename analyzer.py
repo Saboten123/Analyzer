@@ -87,6 +87,7 @@ def analyze_pgn(pgn_text: str, depth: int = 15) -> dict:
     white_rows = [row["cpl"] for row in results if row["side"] == "White"]
     black_rows = [row["cpl"] for row in results if row["side"] == "Black"]
     return {
+        "analysis_type": "pgn",
         "moves": results,
         "engine_depth": depth,
         "initial_fen": initial_fen,
@@ -95,7 +96,8 @@ def analyze_pgn(pgn_text: str, depth: int = 15) -> dict:
         "opening": opening,
         "white_accuracy": player_accuracy(white_samples),
         "black_accuracy": player_accuracy(black_samples),
-        "white_average_cpl": average(white_rows), "black_average_cpl": average(black_rows),
+        "white_average_cpl": average(white_rows),
+        "black_average_cpl": average(black_rows),
         "average_cpl": average([row["cpl"] for row in results]),
         "evaluation_graph": evaluation_graph(graph_points),
     }
@@ -119,6 +121,7 @@ def analyze_fen(fen: str, depth: int = 15) -> dict:
     evaluation = round(best_white_score / 100, 2)
 
     return {
+        "analysis_type": "fen",
         "engine_depth": depth,
         "initial_fen": fen,
         "opening_name": "N/A",
@@ -135,8 +138,6 @@ def analyze_fen(fen: str, depth: int = 15) -> dict:
         "black_average_cpl": None,
         "average_cpl": None,
         "evaluation_graph": None,
-
-        # New fields for FEN analysis
         "best_move": best_san,
         "evaluation": evaluation,
         "principal_variation": [
