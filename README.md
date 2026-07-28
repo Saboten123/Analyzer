@@ -173,7 +173,6 @@ The project can be deployed using:
 
 ## Screenshots
 
-You can add screenshots here.
 
 ### Home Page
 
