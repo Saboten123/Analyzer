@@ -183,7 +183,8 @@ images/home.png
 ### Analysis Page
 
 ```
-images/analysis.png
+images/analysis1.png
+images/analysis2.png
 ```
 
 ### Evaluation Graph
