@@ -195,9 +195,9 @@ images/graph.png
 
 ---
 
-## Author
+<!--## Author
 
-**Manashish Dhar**
+**Manashish Dhar**-->
 
 
 ## Live Demo
