@@ -176,24 +176,17 @@ The project can be deployed using:
 
 ### Home Page
 
-```
-images/home.png
-```
+![Home Page](images/home.png)
 
 ### Analysis Page
 
-```
-images/analysis1.png
-images/analysis2.png
-```
+![Analysis Page 1](images/analysis1.png)
+
+![Analysis Page 2](images/analysis2.png)
 
 ### Evaluation Graph
 
-```
-images/graph.png
-```
-
----
+![Evaluation Graph](images/graph.png)
 
 <!--## Author
 
