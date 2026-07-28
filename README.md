@@ -173,7 +173,6 @@ The project can be deployed using:
 
 ## Screenshots
 
-You can add screenshots here.
 
 ### Home Page
 
@@ -195,9 +194,9 @@ images/graph.png
 
 ---
 
-## Author
+<!--## Author
 
-**Manashish Dhar**
+**Manashish Dhar**-->
 
 
 ## Live Demo
